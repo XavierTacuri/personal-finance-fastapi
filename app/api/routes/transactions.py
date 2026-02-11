@@ -6,11 +6,11 @@ from fastapi import APIRouter, Query
 from app.schemas.transaction import TransactionCreate, TransactionOut,TransactionType,Category
 from app.repositories.transactions_repo import TransactionRepository
 from app.services.transaction_service import TransactionService
+from app.core.container import transaction_service as _service
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
 
-_repo = TransactionRepository()
-_service = TransactionService(_repo)
+
 
 @router.post("", response_model=TransactionOut, status_code=201)
 def create_transaction(payload: TransactionCreate):
