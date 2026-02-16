@@ -1,6 +1,12 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings,SettingsConfigDict
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "Personal Finance API"
+    model_config = SettingsConfigDict(
+        env_file = ".env",
+        extra = "ingore"
+        )
+
+    DATABASE_URL:  str
+
 
 settings = Settings()
