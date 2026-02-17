@@ -1,37 +1,34 @@
-from datetime import date
-from typing import Optional, List
-from unittest import result
+# app/repositories/transactions_repo.py
 
-from app.schemas.transaction import TransactionCreate, TransactionOut, TransactionType,Category
+from sqlmodel import Session, select
+from app.models.db_models import Transaction, Category
+
 
 class TransactionRepository:
 
-    def __init__(self)->None:
-        self._data: List[TransactionOut] = []
-        self._id: int = 1
+    def __init__(self, db: Session):
+        self.db = db
 
-    def create(self, payload: TransactionCreate)->TransactionOut:
-        item = TransactionOut(id=self._id, **payload.model_dump())
-        self._id += 1
-        self._data.append(item)
-        return item
+    def create(self, payload):
+        tx = Transaction(**payload.model_dump())
+        self.db.add(tx)
+        self.db.commit()
+        self.db.refresh(tx)
+        return tx
 
-    def list(self,
-             tx_type: Optional[TransactionType]=None,
-             category: Optional[Category]=None,
-             date_from: Optional[date]=None,
-             date_to: Optional[date]=None,)-> List[TransactionOut]:
-        result = self._data
+    def get_all(self, user_id: int):
+        statement = (
+            select(Transaction, Category.name)
+            .join(Category, Transaction.category_id == Category.id)
+            .where(Transaction.user_id == user_id)
+        )
 
-        if tx_type:
-            result=[x for x in result if x.type == tx_type]
-        if category:
-            result=[x for x in result if x.category == category]
-        if date_from:
-            result=[x for x in result if x.date >= date_from ]
-        if date_to:
-            result=[x for x in result if x.date <= date_to ]
+        results = self.db.exec(statement).all()
 
-        return result
-
-
+        return [
+            {
+                **tx.model_dump(),
+                "category_name": category_name
+            }
+            for tx, category_name in results
+        ]

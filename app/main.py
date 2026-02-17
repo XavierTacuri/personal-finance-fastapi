@@ -1,6 +1,7 @@
 from fastapi import  FastAPI
 from app.api.router import api_router
 from scalar_fastapi import get_scalar_api_reference
+import app.models.db_models as m
 
 app=FastAPI(
     title="Personal Finance API",
@@ -8,6 +9,8 @@ app=FastAPI(
 )
 
 app.include_router(api_router)
+
+print(m.__file__)
 
 @app.get("/health")
 def health_check():

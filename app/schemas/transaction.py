@@ -1,27 +1,18 @@
 from datetime import date
-from enum import Enum
-from pydantic import BaseModel,Field
+from pydantic import BaseModel, Field
+from app.models.db_models import TransactionType
 
-class TransactionType(str,Enum):
-    income = "income"
-    expense = "expense"
-
-class Category(str, Enum):
-    food = "food"
-    transport = "transport"
-    rent = "rent"
-    salary = "salary"
-    entertainment = "entertainment"
-    education = "education"
-    health = "health"
-    utilities = "utilities"
 
 class TransactionCreate(BaseModel):
+    user_id: int
+    category_id: int
     type: TransactionType
-    category: Category
-    amount: float = Field( ..., gt=0 )
-    date: date
+    amount: float = Field(..., gt=0)
+    currency: str = Field(default="USD", max_length=3)
+    txn_date: date
     note: str | None = Field(default=None, max_length=200)
+
 
 class TransactionOut(TransactionCreate):
     id: int
+    category_name: str | None = None
