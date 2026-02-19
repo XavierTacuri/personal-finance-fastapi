@@ -1,11 +1,16 @@
 from pydantic import BaseModel
-from typing import Dict
-from app.schemas.transaction import Category
+from typing import List
 
-class MonthlyReport(BaseModel):
-    month : str
-    total_income : float
-    total_expense : float
-    savings : float
-    expenses_category: Dict[Category, float]
 
+class categorySpend(BaseModel):
+    category_id: int
+    category_name: str
+    total: float
+
+class monthlyReport(BaseModel):
+    user_id: int
+    month: str
+    total_income: float
+    total_expense: float
+    balance: float
+    expense_by_category: List[categorySpend]

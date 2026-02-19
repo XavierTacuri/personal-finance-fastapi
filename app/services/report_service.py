@@ -1,39 +1,27 @@
-from datetime import date
-from app.schemas.transaction import TransactionType
-from app.schemas.report import MonthlyReport
-from app.repositories.transactions_repo import TransactionRepository
+from app.models.db_models import TransactionType
+
 
 class ReportService:
-    def __init__(self, repo: TransactionRepository)-> None:
+    def __init__(self, repo):
         self.repo = repo
 
-    def monthly_report(self,month: str) -> MonthlyReport:
-        year , m = month.split('-')
-        year = int(year)
-        m = int(m)
+    def monthly_report(self,user_id:int,year:int,month:int):
+        total,start, end = self.repo.monthly_total(user_id,year,month)
 
-        start = date(year, m, 1)
-        if m == 12:
-            end = date(year+1,1,1)
-        else:
-            end = date(year, m+1,1)
+        total_income = total.get(TransactionType.income,0.0)
+        total_expense = total.get(TransactionType.expense,0.0)
+        balance = total_income - total_expense
 
-        txs = self.repo.list(date_from=start, date_to=end)
-
-        total_income = sum (t.amount for t in txs if t.type == TransactionType.income)
-        total_expense = sum(t.amount for t in txs if t.type == TransactionType.expense)
-        savings = total_income - total_expense
-
-        expense_category = {}
-        for t in txs:
-            if t.type == TransactionType.expense:
-                expense_category[t.category] = expense_category.get(t.category, 0.0) + t.amount
-
-        return MonthlyReport(month=month,
-                            total_income = round(total_income,2),
-                            total_expense= round(total_expense,2),
-                            savings = round(savings,2),
-                            expenses_category={k: round(v,2) for k, v in expense_category.items()}
-                            )
-
-
+        cat_rows = self.repo.expenses_by_category(user_id,start,end)
+        expense_category = [
+            {"category_id": cid, "category_name": name , "total":float(total)}
+            for cid, name, total in cat_rows
+        ]
+        return {
+            "user_id": user_id,
+            "month": f"{year:04d}-{month:02d}",
+            "total_income": total_income,
+            "total_expense": total_expense,
+            "balance": balance,
+            "expense_by_category": expense_category,
+        }

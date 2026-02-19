@@ -1,14 +1,15 @@
-#from fastapi import APIRouter,Query
+from fastapi import APIRouter,Depends
+from sqlmodel import Session
+from app.db.session import get_session
+from app.schemas.report import monthlyReport
+from app.repositories.reports_repo import ReportsRepository
+from app.services.report_service import ReportService
 
-#from app.schemas.report import MonthlyReport
-#from app.core.container import report_service
+router = APIRouter(prefix="/reports", tags=["reports"])
 
+def get_service(db: Session = Depends(get_session)):
+    return ReportService(ReportsRepository(db))
 
-#router = APIRouter(prefix="/reports", tags=["reports"])
-
-
-
-#@router.get("/monthly", response_model=MonthlyReport)
-#def get_monthly_report(month:str=Query(...,pattern=r"^\d{4}-\d{2}$")):
-#    return report_service.monthly_report(month)
-
+@router.get("/",response_model=monthlyReport)
+def monthly_report(user_id:int, year:int, month:int,service:ReportService=Depends(get_service)):
+    return service.monthly_report(user_id,year,month)
