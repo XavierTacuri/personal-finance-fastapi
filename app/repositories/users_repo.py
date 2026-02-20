@@ -6,9 +6,13 @@ class UserRepository:
         self.db = db
 
     def get_by_email(self,email:str):
-        return self.db.execute(select(User).where(User.email == email)).first()
+        stmt = select(User).where(User.email==email)
+        return self.db.exec(stmt).first()
 
-    def create(self,user:User)->User:
+    def get_ID(self,user_id:int):
+        return self.db.get(User,user_id)
+
+    def userCreate(self,user:User):
         self.db.add(user)
         self.db.commit()
         self.db.refresh(user)
