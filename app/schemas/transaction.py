@@ -4,7 +4,6 @@ from app.models.db_models import TransactionType
 
 
 class TransactionCreate(BaseModel):
-    user_id: int
     category_id: int
     type: TransactionType
     amount: float = Field(..., gt=0)

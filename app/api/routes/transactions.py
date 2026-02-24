@@ -1,11 +1,16 @@
 # app/api/routes/transactions.py
+from datetime import date
+from typing import List,Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends,HTTPException,Query
 from sqlmodel import Session
+from app.api.deps import get_current_user
 from app.db.session import get_session
-from app.schemas.transaction import TransactionCreate
+
 from app.repositories.transactions_repo import TransactionRepository
 from app.services.transaction_service import TransactionService
+from app.schemas.transaction import TransactionCreate,TransactionType,TransactionOut
+from app.models.db_models import Transaction
 
 router = APIRouter(prefix="/transactions", tags=["Transactions"])
 
@@ -15,11 +20,32 @@ def get_service(db: Session = Depends(get_session)):
     return TransactionService(repo)
 
 
-@router.post("/")
-def create_transaction(payload: TransactionCreate, service: TransactionService = Depends(get_service)):
-    return service.create_transaction(payload)
+@router.post("/", response_model=TransactionOut, status_code=201)
+def create_transaction(payload: TransactionCreate,
+                       db: Session = Depends(get_session),
+                       user=Depends(get_current_user)):
+    service = TransactionService(TransactionRepository(db))
+    try:
+        return service.create_transaction(user_id=user.id,payload=payload)
+    except ValueError as e:
+        raise HTTPException(status_code=400,detail=str(e))
 
 
-@router.get("/{user_id}")
-def list_transactions(user_id: int, service: TransactionService = Depends(get_service)):
-    return service.list_transactions(user_id)
+@router.get("",response_model=List[TransactionOut])
+def list_transactions(type:Optional[TransactionType] = Query(None),
+                      category_id: int | None = Query(None, alias="category"),
+                      from_date: Optional[date] = Query(None,alias="from"),
+                      to_date: Optional[date] = Query(None,alias="to"),
+                      db: Session = Depends(get_session),
+                      user=Depends(get_current_user)):
+    service = TransactionService(TransactionRepository(db))
+    try:
+        return service.list_transactions(
+            user_id=user.id,
+            tx_type=type,
+            category_id=category_id,
+            date_from=from_date,
+            date_to=to_date,
+            )
+    except ValueError as e:
+        raise HTTPException(status_code=400,detail=str(e))
