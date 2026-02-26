@@ -13,7 +13,9 @@ class CategoryTotalOut(BaseModel):
     category_id: int
     category_name: str
     total: float
+    percent: float
 
 class DailyTotalOut(BaseModel):
     day: date
     total: float
+

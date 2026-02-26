@@ -14,28 +14,22 @@ class ReportService:
     def __init__(self, repo:ReportsRepository):
         self.repo = repo
 
-    def monthly_summary(self,user_id:int,year:int,month:int)->MonthlySummaryOut:
+    def by_category(self, user_id: int, year: int, month: int, tx_type: TransactionType):
+        start = date(year, month, 1)
+        end = date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)
 
-        total=self.repo.monthly_totals(user_id=user_id,year=year,month=month)
-        income=float(total.get(TransactionType.income,0.0))
-        expense=float(total.get(TransactionType.expense,0.0))
+        rows = self.repo.totals_by_category(user_id=user_id, start=start, end=end, tx_type=tx_type)
 
-        return MonthlySummaryOut(
-                year=year,
-                month=month,
-                income=income,
-                expense=expense,
-                net = income - expense,
-                )
-    def by_category(self,user_id:int,year:int,month:int,tx_type:TransactionType):
-        rows=self.repo.totals_by_category(user_id=user_id,year=year,month=month,tx_type=tx_type)
-        return [
-            CategoryTotalOut(category_id = category_id,
-                             category_name = category_name,
-                             total = float(total),)
-            for category_id,category_name,total in rows
-            ]
+        grand_total = sum(float(total) for _, _, total in rows) or 0.0
 
-    def daily(self,user_id:int,date_from:date,date_to:date,tx_type:TransactionType):
-        rows = self.repo.daily_totals(user_id=user_id,date_from=date_from,date_to=date_to,tx_type=tx_type)
-        return [DailyTotalOut(day=d, total=float(t)) for d, t in rows]
+        out = []
+        for category_id, category_name, total in rows:
+            total_f = float(total)
+            percent = (total_f / grand_total * 100.0) if grand_total > 0 else 0.0
+            out.append(CategoryTotalOut(
+                category_id=category_id,
+                category_name=category_name,
+                total=total_f,
+                percent=percent,
+            ))
+        return out

@@ -23,3 +23,25 @@ class TransactionService:
                                  category_id=category_id,
                                  date_from=date_from,
                                  date_to=date_to,)
+
+    def list_page(
+            self,
+            user_id: int,
+            tx_type: TransactionType | None = None,
+            category_id: int | None = None,
+            date_from: date | None = None,
+            date_to: date | None = None,
+            sort: str = "desc",
+            limit: int = 50,
+            offset: int = 0,
+    ) -> tuple[list[TransactionOut], int]:
+        return self.repo.list_page(
+            user_id=user_id,
+            tx_type=tx_type,
+            category_id=category_id,
+            date_from=date_from,
+            date_to=date_to,
+            sort=sort,
+            limit=limit,
+            offset=offset,
+        )
