@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime, timezone, date
 from enum import Enum
 from typing import Optional, List
 
@@ -19,7 +19,7 @@ class User(SQLModel, table=True):
     last_name: str = Field(nullable=False)
     email: str = Field(nullable=False, index=True)
     password_hash: str = Field(nullable=False)
-    created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc),nullable=False)
 
     categories: List["Category"] = Relationship(back_populates="user")
     transactions: List["Transaction"] = Relationship(back_populates="user")
@@ -35,7 +35,7 @@ class Category(SQLModel, table=True):
     user_id: int = Field(foreign_key="users.id", nullable=False, index=True)
     name: str = Field(nullable=False, max_length=50)
     is_active: bool = Field(default=True, nullable=False)
-    created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc),nullable=False)
 
     user: Optional["User"] = Relationship(back_populates="categories")
     transactions: List["Transaction"] = Relationship(back_populates="category")
@@ -60,7 +60,7 @@ class Transaction(SQLModel, table=True):
 
     txn_date: date = Field(nullable=False, index=True)
     note: Optional[str] = Field(default=None, max_length=200)
-    created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc),nullable=False)
 
     user: Optional["User"] = Relationship(back_populates="transactions")
     category: Optional["Category"] = Relationship(back_populates="transactions")
@@ -80,7 +80,7 @@ class Budget(SQLModel, table=True):
 
     month: date = Field(nullable=False, index=True)
     limit_amount: float = Field(nullable=False)
-    created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc),nullable=False)
 
     user: Optional["User"] = Relationship(back_populates="budgets")
     category: Optional["Category"] = Relationship(back_populates="budgets")

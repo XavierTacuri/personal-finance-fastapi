@@ -9,3 +9,5 @@ class CategoryService:
     def createCategory(self,user_id:int, payload:Category):
         return self.repo.createCategoery(user_id=user_id,name=payload.name)
 
+    def listCategories(self, user_id: int):
+        return self.repo.get_all(user_id=user_id)

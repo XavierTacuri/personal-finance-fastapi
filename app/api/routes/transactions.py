@@ -16,7 +16,7 @@ from app.models.db_models import Transaction
 router = APIRouter(prefix="/transactions", tags=["Transactions"])
 
 
-@router.post("/", response_model=TransactionOut, status_code=201)
+@router.post("", response_model=TransactionOut, status_code=201)
 def create_transaction(payload: TransactionCreate,
                        db: Session = Depends(get_session),
                        user=Depends(get_current_user)):

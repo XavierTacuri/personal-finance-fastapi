@@ -3,6 +3,6 @@ from app.api.deps import get_current_user
 
 router = APIRouter(prefix="/users", tags=["users"])
 
-@router.get("/me")
+@router.get("/me", operation_id="users_me")
 def me(user=Depends(get_current_user)):
     return {"id":user.id,"name":user.name_user,"last_name":user.last_name,"email":user.email}

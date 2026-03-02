@@ -20,3 +20,7 @@ class CategoryRepository:
         except IntegrityError:
             self.db.rollback()
             raise HTTPException(status_code=400,detail="Category already exists")
+
+    def get_all(self, user_id: int):
+        stmt = select(Category).where(Category.user_id == user_id)
+        return self.db.exec(stmt).all()

@@ -12,7 +12,7 @@ from app.schemas.report import MonthlySummaryOut,CategoryTotalOut,DailyTotalOut
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
-@router.get("/monthly-summary",response_model=MonthlySummaryOut)
+@router.get("/monthly-summary",  operation_id="reports_monthly_summary" ,response_model=MonthlySummaryOut)
 def monthly_report(year:int =Query(...,ge=2000,le=2100),
                    month:int=Query(...,ge=1,le=12),
                    db:Session=Depends(get_session),
@@ -20,7 +20,7 @@ def monthly_report(year:int =Query(...,ge=2000,le=2100),
     service = ReportService(ReportsRepository(db))
     return service.monthly_summary(user_id=user.id,year=year,month=month)
 
-@router.get("/by-category",response_model=list[CategoryTotalOut])
+@router.get("/by-category",operation_id="reports_by_category",response_model=list[CategoryTotalOut])
 def by_category(year:int =Query(...,ge=2000,le=2100),
                 month:int=Query(...,ge=1,le=12),
                 type:TransactionType=Query(...),
@@ -29,7 +29,7 @@ def by_category(year:int =Query(...,ge=2000,le=2100),
     service = ReportService(ReportsRepository(db))
     return service.by_category(user_id=user.id,year=year,month=month,tx_type=type)
 
-@router.get("/daily-summary",response_model=list[DailyTotalOut])
+@router.get("/daily-summary",operation_id="reports_daily_summary",response_model=list[DailyTotalOut])
 def by_daily(from_date:date = Query(...,alias="from"),
              to_date:date = Query(...,alias="to"),
              type:TransactionType=Query(...),
